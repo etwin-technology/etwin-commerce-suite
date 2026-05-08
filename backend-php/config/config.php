@@ -75,4 +75,9 @@ return [
     // Login attempt throttling — max attempts per (ip, email) within the window
     'login_throttle_max'      => (int)(getenv('LOGIN_THROTTLE_MAX')    ?: 8),
     'login_throttle_window'   => (int)(getenv('LOGIN_THROTTLE_WINDOW') ?: 600), // seconds
+    // Storefront subdomain config — see Mapper::storefrontUrl().
+    // STOREFRONT_URL_PATTERN supports tokens {slug} and {domain}, OR the literal "path"
+    // for /store/{slug} fallback when subdomain DNS isn't available.
+    'app_domain'              => getenv('APP_DOMAIN')              ?: '',
+    'storefront_url_pattern'  => getenv('STOREFRONT_URL_PATTERN')  ?: 'path',
 ];

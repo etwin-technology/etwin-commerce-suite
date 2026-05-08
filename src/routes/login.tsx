@@ -5,6 +5,16 @@ import { useAuth } from "@/lib/auth";
 import { useMockApi } from "@/lib/api/client";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
+// Test/demo accounts seeded by backend-php/sql/install.sql.
+// Visible in mock mode AND when the backend has been seeded with these creds.
+// In production set VITE_HIDE_DEMO_LOGIN=1 to suppress the picker.
+const TEST_ACCOUNTS = [
+  { email: "demo@etwin.app",       label: "Marchand",    desc: "Atlas Watches · Starter" },
+  { email: "admin@etwin.app",      label: "Admin",       desc: "Sahara Boutique · Pro" },
+  { email: "superadmin@etwin.app", label: "Super Admin", desc: "Accès plateforme complet" },
+];
+const HIDE_DEMO_LOGIN = (import.meta.env.VITE_HIDE_DEMO_LOGIN as string | undefined) === "1";
+
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
@@ -24,7 +34,9 @@ function LoginPage() {
   const navigate = useNavigate();
   const search = useSearch({ from: "/login" });
   const isMock = useMockApi();
-  // Only prefill demo creds when running against the local mock backend.
+  const showDemoPicker = !HIDE_DEMO_LOGIN;
+  // Pre-fill demo creds in mock mode for instant click-through.
+  // On the real backend, leave blank but still expose the test-admin picker below.
   const [email, setEmail] = useState(isMock ? "demo@etwin.app" : "");
   const [password, setPassword] = useState(isMock ? "demo1234" : "");
   const [loading, setLoading] = useState(false);
@@ -107,14 +119,17 @@ function LoginPage() {
               </Link>
             </p>
 
-            {isMock && (
+            {showDemoPicker && (
               <div className="mt-8 p-4 rounded-xl bg-surface-alt border border-border text-xs space-y-2">
-                <p className="font-semibold text-foreground mb-2">Mode démo — mot de passe : <code className="text-primary">demo1234</code></p>
-                {[
-                  { email: "demo@etwin.app",       label: "Marchand",    desc: "Atlas Watches · Essai" },
-                  { email: "admin@etwin.app",       label: "Admin",       desc: "Sahara Boutique · Pro" },
-                  { email: "superadmin@etwin.app",  label: "Super Admin", desc: "Accès complet" },
-                ].map(a => (
+                <p className="font-semibold text-foreground mb-2">
+                  {isMock ? "Mode démo" : "Comptes de test"} — mot de passe : <code className="text-primary">demo1234</code>
+                </p>
+                {!isMock && (
+                  <p className="text-[10px] text-muted-foreground/70 mb-2">
+                    Disponibles uniquement si la base a été initialisée avec <code>sql/install.sql</code>.
+                  </p>
+                )}
+                {TEST_ACCOUNTS.map(a => (
                   <button
                     key={a.email}
                     type="button"

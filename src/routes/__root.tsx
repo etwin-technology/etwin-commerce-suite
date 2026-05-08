@@ -9,6 +9,7 @@ import { AuthProvider } from "../lib/auth";
 import { ImpersonationBanner } from "../components/ImpersonationBanner";
 import { DemoModeBanner } from "../components/DemoModeBanner";
 import i18n from "../i18n";
+import { slugFromHost } from "../lib/storefrontUrl";
 
 function NotFoundComponent() {
   return (
@@ -81,6 +82,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   useEffect(() => {
     applyLangToDocument(i18n.resolvedLanguage || "ar");
+    // Subdomain bootstrap: when the user lands on <slug>.<APP_DOMAIN> at "/",
+    // route to the storefront for that slug.
+    if (typeof window !== "undefined") {
+      const slug = slugFromHost();
+      if (slug && window.location.pathname === "/") {
+        window.history.replaceState(null, "", `/store/${encodeURIComponent(slug)}${window.location.search}`);
+      }
+    }
   }, []);
   return (
     <AuthProvider>

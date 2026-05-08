@@ -5,6 +5,7 @@ import { api, useMockApi, getAuthToken, getTenantId, setTenantId } from "@/lib/a
 import type { AdminStore, PaginatedResponse } from "@/lib/api/types";
 import { useAuth } from "@/lib/auth";
 import { setImpersonation } from "@/lib/impersonate";
+import { storefrontUrlFor } from "@/lib/storefrontUrl";
 
 export const Route = createFileRoute("/admin/stores")({
   component: AdminStoresPage,
@@ -206,7 +207,7 @@ function AdminStoresPage() {
                         </button>
                       )}
                       <a
-                        href={`/store/${s.slug}`}
+                        href={storefrontUrlFor(s.slug, { customDomain: s.customDomain, domainVerified: s.domainVerified })}
                         target="_blank"
                         rel="noreferrer"
                         className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/10 transition-colors"

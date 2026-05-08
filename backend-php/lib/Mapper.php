@@ -24,13 +24,14 @@ class Mapper {
         $footer = $r['footer_settings'] ? json_decode($r['footer_settings'], true) : null;
 
         return [
-            'id'       => $r['id'],
-            'name'     => $r['name'],
-            'slug'     => $r['slug'],
-            'ownerId'  => $r['owner_id'],
-            'currency' => $r['currency'],
-            'city'     => $r['city'],
-            'logoUrl'  => $r['logo_url'],
+            'id'           => $r['id'],
+            'name'         => $r['name'],
+            'slug'         => $r['slug'],
+            'ownerId'      => $r['owner_id'],
+            'currency'     => $r['currency'],
+            'city'         => $r['city'],
+            'logoUrl'      => $r['logo_url'],
+            'storefrontUrl' => self::storefrontUrl($r['slug'], $r['custom_domain'] ?? null, !empty($r['domain_verified'])),
             'notifications' => [
                 'whatsappNumber' => $r['whatsapp_number'] ?? '',
                 'telegramChatId' => $r['telegram_chat_id'],
@@ -68,6 +69,38 @@ class Mapper {
                 'active'    => (bool)$r['plan_active'],
             ],
         ];
+    }
+
+    /**
+     * Build the public storefront URL for a store, honouring (in order):
+     *  1. Verified custom domain                  → https://<custom>
+     *  2. STOREFRONT_URL_PATTERN with {slug}/{domain} tokens (subdomain mode)
+     *  3. APP_BASE_URL/store/<slug>               (path-mode fallback)
+     *
+     * Pattern examples:
+     *   STOREFRONT_URL_PATTERN=https://{slug}.{domain}   APP_DOMAIN=etwin.app
+     *     → https://atlas-watches.etwin.app
+     *   STOREFRONT_URL_PATTERN=path                       APP_BASE_URL=http://localhost:5173
+     *     → http://localhost:5173/store/atlas-watches
+     */
+    public static function storefrontUrl(string $slug, ?string $customDomain, bool $domainVerified): string {
+        $cfg = require __DIR__ . '/../config/config.php';
+
+        if ($domainVerified && $customDomain) {
+            $scheme = !empty($cfg['force_https']) ? 'https' : 'http';
+            return "$scheme://$customDomain";
+        }
+
+        $pattern = (string)($cfg['storefront_url_pattern'] ?? 'path');
+        $domain  = (string)($cfg['app_domain'] ?? '');
+
+        // "path" or empty = fall back to APP_BASE_URL/store/<slug>
+        if ($pattern === '' || $pattern === 'path' || $domain === '') {
+            $base = rtrim((string)($cfg['app_base_url'] ?? ''), '/');
+            return ($base !== '' ? $base : '') . '/store/' . rawurlencode($slug);
+        }
+
+        return strtr($pattern, ['{slug}' => $slug, '{domain}' => $domain]);
     }
 
     public static function product(array $r): array {
