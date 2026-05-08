@@ -10,8 +10,8 @@ The frontend automatically uses this backend when you set `VITE_PHP_API_BASE`.
 
 ## 2. Install
 ```bash
-# 1) Create the database
-mysql -u root -p < sql/schema.sql
+# 1) Create the database (one-shot: schema + seed data + 3 test accounts)
+mysql -u root < sql/install.sql
 
 # 2) Configure secrets — pick one:
 #    a) For local dev: copy .env.example → .env and edit it
@@ -39,32 +39,33 @@ php -S 0.0.0.0:8080 -t public      # quick local dev
 The repo ships with a working Laragon flow. Two options:
 
 ### Option A — Built-in PHP server (simplest)
-1. Open Laragon → **Menu → MySQL → Create database** → name it `etwin_commerce`.
-2. Import the schema (Laragon → **HeidiSQL** or `mysql` from Laragon's terminal):
+1. Import the schema (Laragon → **HeidiSQL** or `mysql` from Laragon's terminal). The one-shot file creates the database, all tables, seed data, and 3 test accounts:
    ```bash
-   mysql -u root etwin_commerce < sql/schema.sql
-   # then any pending migrations:
-   mysql -u root etwin_commerce < sql/migrate_v2.sql
-   mysql -u root etwin_commerce < sql/migrate_v3.sql
-   mysql -u root etwin_commerce < sql/migrate_v4.sql
-   mysql -u root etwin_commerce < sql/migrate_v5.sql
-   mysql -u root etwin_commerce < sql/migrate_v6.sql
+   mysql -u root < sql/install.sql
    ```
-3. Copy the env template:
+   > Existing DB? Run the legacy `sql/migrate_v2..v6.sql` files in order instead — `install.sql` drops and recreates managed tables.
+2. Copy the env template:
    ```bash
    cd backend-php
    cp .env.example .env
    ```
    The defaults already match Laragon (root user, empty password, `127.0.0.1:3306`).
-4. From Laragon's terminal, start the API:
+3. From Laragon's terminal, start the API:
    ```bash
    php -S 127.0.0.1:8080 -t public
    ```
-5. In the project root, point the frontend at it — edit `.env`:
+4. In the project root, point the frontend at it — edit `.env`:
    ```
    VITE_PHP_API_BASE=http://127.0.0.1:8080
    ```
    Then `bun run dev` (or `npm run dev`). Browse `http://localhost:5173`.
+
+5. **Log in with the seeded test accounts** (password for all three: `demo1234`):
+   - `demo@etwin.app` → role: `user`
+   - `admin@etwin.app` → role: `admin`
+   - `superadmin@etwin.app` → role: `super_admin`
+
+   The login screen shows a one-click picker for these. Set `VITE_HIDE_DEMO_LOGIN=1` in production to hide it.
 
 ### Option B — Apache vhost (`.test` domain)
 If you want the API on a Laragon `.test` domain:
@@ -86,6 +87,61 @@ If you want the API on a Laragon `.test` domain:
 5. Set `CORS_ALLOW_ORIGIN=http://localhost:5173` in `backend-php/.env`.
 
 The `.htaccess` in `backend-php/public/` handles routing — no extra config needed.
+
+### Option C — Project lives under `www/test/<project>`
+Laragon's auto-vhost only creates a `<folder>.test` host for folders directly under `www`. When the project is nested at `C:\laragon\www\test\<project>\`, you need to add a vhost manually.
+
+Create `C:\laragon\etc\apache2\sites-enabled\auto.etwin.test.conf`:
+
+```apache
+# Frontend (Vite proxy). Skip this block if you run Vite separately on :5173.
+<VirtualHost *:80>
+  ServerName etwin.test
+  DocumentRoot "C:/laragon/www/test/<project>"
+</VirtualHost>
+
+# API
+<VirtualHost *:80>
+  ServerName etwin-api.test
+  DocumentRoot "C:/laragon/www/test/<project>/backend-php/public"
+  <Directory "C:/laragon/www/test/<project>/backend-php/public">
+    AllowOverride All
+    Require all granted
+  </Directory>
+</VirtualHost>
+
+# Wildcard storefront — every store gets <slug>.etwin.test pointing at the React build.
+<VirtualHost *:80>
+  ServerName store.etwin.test
+  ServerAlias *.etwin.test
+  DocumentRoot "C:/laragon/www/test/<project>/dist"
+  <Directory "C:/laragon/www/test/<project>/dist">
+    AllowOverride All
+    Require all granted
+    # SPA fallback — let React Router resolve subdomain → /store/<slug>
+    FallbackResource /index.html
+  </Directory>
+</VirtualHost>
+```
+
+After reloading Apache (Laragon → Apache → Reload), match the env vars on both sides:
+
+```ini
+# backend-php/.env
+APP_DOMAIN=etwin.test
+STOREFRONT_URL_PATTERN=http://{slug}.{domain}
+APP_BASE_URL=http://etwin.test
+CORS_ALLOW_ORIGIN=http://etwin.test
+```
+
+```ini
+# project root .env (frontend)
+VITE_PHP_API_BASE=http://etwin-api.test
+VITE_APP_DOMAIN=etwin.test
+VITE_STOREFRONT_URL_PATTERN=http://{slug}.{domain}
+```
+
+> Wildcard subdomains: Laragon's hosts-file patcher only adds the names it sees in `ServerName`. To make `*.etwin.test` resolve, install [Acrylic DNS Proxy](https://mayakron.altervista.org/wikibase/show.php?id=AcrylicHome) (Laragon → Tools → Quick Install → Acrylic), then add `127.0.0.1 *.etwin.test` to `AcrylicHosts.txt`.
 
 ### Apache vhost
 ```apache

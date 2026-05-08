@@ -8,6 +8,7 @@ import {
   Settings, ChevronDown, UserCog,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { storeUrl } from "@/lib/storefrontUrl";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NotificationBell } from "./NotificationBell";
 
@@ -305,7 +306,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         {store && (
           <a
-            href={`/store/${store.slug}`}
+            href={storeUrl(store)}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-white/50 hover:text-white hover:bg-white/7 transition-colors"
@@ -381,7 +382,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <LanguageSwitcher />
             {store && (
               <a
-                href={`/store/${store.slug}`}
+                href={storeUrl(store)}
                 target="_blank"
                 rel="noreferrer"
                 className="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border rounded-full px-3 py-1.5 hover:bg-accent transition-colors"

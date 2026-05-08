@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api/client";
 import type { DashboardStats, Order } from "@/lib/api/types";
 import { MAD } from "@/lib/format";
+import { storeUrl } from "@/lib/storefrontUrl";
 
 export const Route = createFileRoute("/dashboard/")({
   component: DashboardIndex,
@@ -143,7 +144,7 @@ function DashboardIndex() {
         <p className="text-[11px] uppercase tracking-wider text-primary-foreground/70 font-semibold">{t("dashboard.missionTitle")}</p>
         <p className="mt-2 font-serif text-xl font-bold relative">{t("dashboard.missionText")}</p>
         <a
-          href={`https://wa.me/?text=${encodeURIComponent(`${store.name} 🛍️ ${typeof window !== "undefined" ? window.location.origin : ""}/store/${store.slug}`)}`}
+          href={`https://wa.me/?text=${encodeURIComponent(`${store.name} 🛍️ ${storeUrl(store)}`)}`}
           target="_blank"
           rel="noreferrer"
           className="mt-4 inline-flex items-center gap-2 bg-card text-foreground rounded-full px-4 py-2 text-sm font-semibold hover:opacity-90"

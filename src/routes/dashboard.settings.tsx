@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { api, useMockApi } from "@/lib/api/client";
 import { useStoreFeatures } from "@/hooks/useStoreFeatures";
 import { FeatureLock, FeatureLockBadge } from "@/components/FeatureLock";
+import { storeUrl } from "@/lib/storefrontUrl";
 
 export const Route = createFileRoute("/dashboard/settings")({
   component: SettingsPage,
@@ -164,7 +165,7 @@ function SettingsPage() {
       >
         <div className="grid sm:grid-cols-2 gap-4">
           <ReadOnly label="Nom de la boutique" value={store.name} />
-          <ReadOnly label="URL" value={`/store/${store.slug}`} />
+          <ReadOnly label="URL" value={storeUrl(store)} />
           <Field label={t("onboarding.city")} value={city} onChange={setCity} placeholder="Casablanca" />
           <ReadOnly label="Devise" value={store.currency} />
         </div>

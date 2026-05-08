@@ -4,6 +4,7 @@ import { Save, ExternalLink, Plus, Trash2, MessageCircle, Palette, Image as Imag
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api/client";
 import { ImageUploader } from "@/components/ImageUploader";
+import { storeUrl } from "@/lib/storefrontUrl";
 import type { MenuLink, Store, StoreSocials } from "@/lib/api/types";
 
 export const Route = createFileRoute("/dashboard/storefront")({
@@ -99,7 +100,7 @@ function StorefrontEditor() {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href={`/store/${store.slug}`}
+            href={storeUrl(store)}
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-card text-sm hover:bg-muted"
@@ -132,7 +133,7 @@ function StorefrontEditor() {
             </Field>
             <Field label="Public URL">
               <div className="flex items-center text-sm bg-muted/50 border border-border rounded-lg px-3 py-2 text-muted-foreground">
-                <span dir="ltr">/store/{store.slug}</span>
+                <span dir="ltr">{storeUrl(store)}</span>
               </div>
             </Field>
           </div>

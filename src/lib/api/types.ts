@@ -102,6 +102,13 @@ export interface Store {
   currency: Currency;
   city: string;
   logoUrl?: string | null;
+  /**
+   * Public URL where customers reach this store. Built by the backend from
+   * APP_DOMAIN / STOREFRONT_URL_PATTERN — typically `https://<slug>.etwin.app`
+   * (subdomain mode) or `<APP_BASE_URL>/store/<slug>` (path-mode fallback).
+   * If a custom domain is configured AND verified, this is `https://<custom>`.
+   */
+  storefrontUrl?: string;
   notifications: StoreNotifications;
   tracking: StoreTracking;
   theme: StoreTheme;

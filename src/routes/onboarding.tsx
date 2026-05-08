@@ -7,6 +7,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { RequireAuth } from "@/components/RequireAuth";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api/client";
+import { storeUrl as buildStoreUrl } from "@/lib/storefrontUrl";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB upload cap
 
@@ -100,8 +101,7 @@ function Onboarding() {
     }
   };
 
-  const storeUrl =
-    typeof window !== "undefined" ? `${window.location.origin}/store/${store.slug}` : `/store/${store.slug}`;
+  const storeUrl = buildStoreUrl(store);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(storeUrl);
